@@ -1,0 +1,54 @@
+---
+title: "assignment-b4"
+output: html_document
+date: "2024-12-03"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(stringr)
+library(purrr)
+library(janeaustenr)
+library(tidytext)
+library(tidyverse)
+```
+
+## Exercise 1
+
+### Task: Develop a plot of the most commonly used words in the Jane Austen novel "Pride and Prejudice"
+
+Step 1: Tidying Character Data
+
+```{r}
+words <- prideprejudice %>% 
+  paste(collapse = " ") %>% 
+  str_remove_all("\\d") %>% 
+  str_remove_all("[[:punct:]]") %>% 
+  str_squish() %>% 
+  str_split("\\s+") %>%
+  unlist() %>% 
+  tolower() %>% 
+  .[!. %in% stop_words$word] 
+```
+
+Step 2: Plotting the Most Common Words
+
+```{r}
+word_freq <- table(words)
+top10 <- sort(word_freq, decreasing = TRUE)[1:50]
+wordcloud(names(top10), freq = top10, min.freq = 1, 
+          scale = c(3, 0.5), colors = brewer.pal(8, "Dark2"))
+```
+
+
+## Exercise 2
+
+### Task: Make a function that converts words into your own version of pig latin
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
