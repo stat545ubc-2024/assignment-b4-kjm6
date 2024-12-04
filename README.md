@@ -1,1 +1,3 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/TgL49qdK)
+This repository contains the Rmd and md files for the STAT545 B-4 Assignment. 
+
+The assignment is contained in the files assignment-b4.Rmd and assignment-b4.md. In the assignment, there are three exercises. The first exercise shows the most commonly used non-filler words in the book Pride and Prejudice. The second exercise shows code for use as a new "language" of pig latin. The third exercise develops code and uses nesting and mapping functions to demonstrate a connection between tree size and location in the City of Vancouver, and shows that the connection depends on tree genus. 
