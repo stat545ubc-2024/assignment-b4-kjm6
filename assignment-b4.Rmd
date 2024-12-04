@@ -22,23 +22,23 @@ library(datateachr)
 Step 1: Tidying character data
 
 ```{r}
-words <- prideprejudice %>% 
+prideprejudicewords <- prideprejudice %>% 
   paste(collapse = " ") %>% # paste to string
   str_remove_all("\\d") %>% # remove numbers 
   str_remove_all("[[:punct:]]") %>% # remove punctuation
   str_squish() %>%  # remove blank spaces
   str_split("\\s+") %>% # split string into individual words
-  unlist() %>% 
+  unlist() %>% #unlisting the string
   str_to_lower() %>% # convert to lowercase
   .[!. %in% stop_words$word] # remove stop words
 ```
 
 Step 2: Plotting the most common words as a wordle
 
-```{r echo=FALSE}
-word_freq <- table(words) # counting occurence of each word
-top10 <- sort(word_freq, decreasing = TRUE)[1:50] # sorting words by frequency
-wordcloud(names(top10), freq = top10, min.freq = 1, scale = c(3, 1)) # plotting wordcloud based on frequency
+```{r}
+word_freq <- table(prideprejudicewords) %>% # counting occurence of each word
+  sort(decreasing = TRUE)
+wordcloud(names(word_freq), freq = word_freq, min.freq = 50, scale = c(3, 1)) # plotting wordcloud based on frequency
 ```
 
 
@@ -49,7 +49,7 @@ wordcloud(names(top10), freq = top10, min.freq = 1, scale = c(3, 1)) # plotting 
 Step 1: Write the code to translate words to pig latin
 
 ```{r}
-kjm_pig_latin <- function(word) {
+kjm_pig_latin <- function(.) {
   consonants <- c("b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z")
   
   # Function to check if a character is a consonant
@@ -58,23 +58,23 @@ kjm_pig_latin <- function(word) {
   }
   
   # Check for the presence and length of a consonant cluster at the front
-  starts_with_consonant_cluster <- function(word) {
+  starts_with_consonant_cluster <- function(.) {
     cluster_end <- 1
-    while (cluster_end <= str_length(word) && is_consonant(str_sub(word, cluster_end, cluster_end))) {
+    while (cluster_end <= str_length(.) && is_consonant(str_sub(., cluster_end, cluster_end))) {
       cluster_end <- cluster_end + 1
     }
     return(cluster_end - 1)
   }
   
   # If the word starts with a consonant cluster, move the consonant cluster to the end and append "ak"
-  consonant_cluster_len <- starts_with_consonant_cluster(word)
+  consonant_cluster_len <- starts_with_consonant_cluster(.)
   if (consonant_cluster_len > 0) {
-    consonant_cluster <- str_sub(word, 1, consonant_cluster_len)
-    remaining_word <- str_sub(word, consonant_cluster_len + 1, str_length(word))
+    consonant_cluster <- str_sub(., 1, consonant_cluster_len)
+    remaining_word <- str_sub(., consonant_cluster_len + 1, str_length(.))
     return(str_c(remaining_word, consonant_cluster, "ak"))
   } else {
     # If the word starts with a vowel cluster, leave the word structure and append "ak" to the end
-    return(str_c(word, "ak"))
+    return(str_c(., "ak"))
   }
 }
 
@@ -96,28 +96,29 @@ print(purrr::map_chr(dictionary, kjm_pig_latin))
 
 ### Task: Evaluate a model that is fit seperately for each group in some dataset
 
-Step 1: Nest to fit multiple models
+Step 1: Make a column of model objects
 
 ```{r}
-model_list <- vancouver_trees %>%
-  group_by(neighbourhood_name) %>%
-  nest() %>% 
-  mutate(model = map(data, ~ lm(diameter ~ height_range_id, data = .)))
-
+common_trees <- vancouver_trees %>%
+  select(tree_id, genus_name, diameter, height_range_id) %>% #selecting columns that will be used
+  group_by(genus_name) %>% #grouping by genus for count
+  mutate(genus_count = n()) %>% #counting the number of trees in each genus
+  filter(genus_count >= 50) %>%  #removing any trees with a genus count less than 50
+  nest() %>%  #nesting initial data
+  mutate(model = map(data, ~ lm(diameter ~ height_range_id, data = .))) #mapping linear regression model of diameter and height
 ```
 
 Step 2: Evaluate the models for R-squared, coefficient, residual, and fitted values and print the intermediate tibble
 
 ```{r}
-model_evaluation <- model_list %>%
-  mutate(r_squared = map_dbl(model, ~ summary(.x)$r.squared),
-         coefficients = map(model, ~ coef(.x)),
-         residuals = map(model, ~ residuals(.x)),
-         fitted_values = map(model, ~ fitted(.x)))
-
+model_evaluation <- common_trees %>%
+  mutate(r_squared = map(model, ~ summary(.x)$r.squared), #adding r-squared column
+    coefficient = map(model, ~ coef(.x)[1]), #adding coefficient column
+    residual = map(model, ~ residuals(.x)), #adding residual column
+    fitted_value = map(model, ~ fitted(.x))) #adding fitted value column
 ```
 
-Step 3: Print the intermediate tibble
+Step 3: Print the nested intermediate tibble
 
 ```{r}
 model_evaluation
@@ -126,18 +127,28 @@ model_evaluation
 Step 4: Unnest the calculations and print the final tibble
 
 ```{r}
-model_evaluation <- model_evaluation %>% 
-  unnest(cols = c(coefficients, residuals, fitted_values)) %>%
-  rename(coefficient_value = coefficients,
-         residual_value = residuals,
-         fitted_value = fitted_values) %>%
-  select(-model)
+final_tbl <- model_evaluation %>% 
+  unnest(cols = c(data, r_squared, coefficient, residual, fitted_value)) %>% #unnesting columns
+  arrange(r_squared) %>%  #sorting in order of ascended r-squared
+  select(genus_name, r_squared, coefficient, residual, fitted_value)
 
-print(model_evaluation)
+
+glimpse(final_tbl)
 ```
 
 Step 5: Produce a plot of the results
 
 ```{r}
+plot_data <- final_tbl %>%
+  group_by(genus_name) %>%
+  summarise(avg_r_squared = mean(r_squared, na.rm = TRUE)) %>%
+  mutate(genus_name = reorder(genus_name, avg_r_squared, FUN = max))
+
+ggplot(plot_data, aes(x = genus_name, y = avg_r_squared)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(title = "Most Common Trees in the City of Vancouver", subtitle = "Correlation between tree height and diameter", x = "Tree Genus", y = "R-squared Correlation") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6))
+
 
 ```
