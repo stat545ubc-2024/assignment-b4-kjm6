@@ -14,7 +14,6 @@ library(tidyverse)
 library(wordcloud)
 library(datateachr)
 library(roxygen2)
-library(duck_latin)
 ```
 
 ## Exercise 1
@@ -50,7 +49,10 @@ wordcloud(names(word_freq), freq = word_freq, min.freq = 50, scale = c(3, 1)) # 
 
 Step 1: Write the code to translate words to "duck latin"
 
-See duck_latin.R file for function code and roxygen2 documentation
+```{r}
+source("https://raw.githubusercontent.com/stat545ubc-2024/assignment-b4-kjm6/main/R/duck_latin.R")
+#See duck_latin.R file for function code and roxygen2 documentation
+```
 
 Step 2: Example of using the function
 
