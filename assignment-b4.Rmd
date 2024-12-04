@@ -11,33 +11,34 @@ library(purrr)
 library(janeaustenr)
 library(tidytext)
 library(tidyverse)
+library(wordcloud)
+library(datateachr)
 ```
 
 ## Exercise 1
 
 ### Task: Develop a plot of the most commonly used words in the Jane Austen novel "Pride and Prejudice"
 
-Step 1: Tidying Character Data
+Step 1: Tidying character data
 
 ```{r}
 words <- prideprejudice %>% 
-  paste(collapse = " ") %>% 
-  str_remove_all("\\d") %>% 
-  str_remove_all("[[:punct:]]") %>% 
-  str_squish() %>% 
-  str_split("\\s+") %>%
+  paste(collapse = " ") %>% # paste to string
+  str_remove_all("\\d") %>% # remove numbers 
+  str_remove_all("[[:punct:]]") %>% # remove punctuation
+  str_squish() %>%  # remove blank spaces
+  str_split("\\s+") %>% # split string into individual words
   unlist() %>% 
-  tolower() %>% 
-  .[!. %in% stop_words$word] 
+  str_to_lower() %>% # convert to lowercase
+  .[!. %in% stop_words$word] # remove stop words
 ```
 
-Step 2: Plotting the Most Common Words
+Step 2: Plotting the most common words as a wordle
 
-```{r}
-word_freq <- table(words)
-top10 <- sort(word_freq, decreasing = TRUE)[1:50]
-wordcloud(names(top10), freq = top10, min.freq = 1, 
-          scale = c(3, 0.5), colors = brewer.pal(8, "Dark2"))
+```{r echo=FALSE}
+word_freq <- table(words) # counting occurence of each word
+top10 <- sort(word_freq, decreasing = TRUE)[1:50] # sorting words by frequency
+wordcloud(names(top10), freq = top10, min.freq = 1, scale = c(3, 1)) # plotting wordcloud based on frequency
 ```
 
 
@@ -45,10 +46,98 @@ wordcloud(names(top10), freq = top10, min.freq = 1,
 
 ### Task: Make a function that converts words into your own version of pig latin
 
-You can also embed plots, for example:
+Step 1: Write the code to translate words to pig latin
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+kjm_pig_latin <- function(word) {
+  consonants <- c("b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z")
+  
+  # Function to check if a character is a consonant
+  is_consonant <- function(char) {
+    return(str_to_lower(char) %in% consonants)
+  }
+  
+  # Check for the presence and length of a consonant cluster at the front
+  starts_with_consonant_cluster <- function(word) {
+    cluster_end <- 1
+    while (cluster_end <= str_length(word) && is_consonant(str_sub(word, cluster_end, cluster_end))) {
+      cluster_end <- cluster_end + 1
+    }
+    return(cluster_end - 1)
+  }
+  
+  # If the word starts with a consonant cluster, move the consonant cluster to the end and append "ak"
+  consonant_cluster_len <- starts_with_consonant_cluster(word)
+  if (consonant_cluster_len > 0) {
+    consonant_cluster <- str_sub(word, 1, consonant_cluster_len)
+    remaining_word <- str_sub(word, consonant_cluster_len + 1, str_length(word))
+    return(str_c(remaining_word, consonant_cluster, "ak"))
+  } else {
+    # If the word starts with a vowel cluster, leave the word structure and append "ak" to the end
+    return(str_c(word, "ak"))
+  }
+}
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Step 2: Test the code on a set of words
+
+```{r}
+# Set the dictionary of words to translate
+dictionary <- c("alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india", "juliett", "kilo", "lima", "mike", "november", "oscar", "papa", "quebec", "romeo", "sierra", "tango", "uniform", "victor", "whiskey", "xray", "yankee", "yulu")
+
+# Test the pig latin on the dictionary of words above
+print(purrr::map_chr(dictionary, kjm_pig_latin))
+
+```
+
+
+## Exercise 3 
+
+### Task: Evaluate a model that is fit seperately for each group in some dataset
+
+Step 1: Nest to fit multiple models
+
+```{r}
+model_list <- vancouver_trees %>%
+  group_by(neighbourhood_name) %>%
+  nest() %>% 
+  mutate(model = map(data, ~ lm(diameter ~ height_range_id, data = .)))
+
+```
+
+Step 2: Evaluate the models for R-squared, coefficient, residual, and fitted values and print the intermediate tibble
+
+```{r}
+model_evaluation <- model_list %>%
+  mutate(r_squared = map_dbl(model, ~ summary(.x)$r.squared),
+         coefficients = map(model, ~ coef(.x)),
+         residuals = map(model, ~ residuals(.x)),
+         fitted_values = map(model, ~ fitted(.x)))
+
+```
+
+Step 3: Print the intermediate tibble
+
+```{r}
+model_evaluation
+```
+
+Step 4: Unnest the calculations and print the final tibble
+
+```{r}
+model_evaluation <- model_evaluation %>% 
+  unnest(cols = c(coefficients, residuals, fitted_values)) %>%
+  rename(coefficient_value = coefficients,
+         residual_value = residuals,
+         fitted_value = fitted_values) %>%
+  select(-model)
+
+print(model_evaluation)
+```
+
+Step 5: Produce a plot of the results
+
+```{r}
+
+```
