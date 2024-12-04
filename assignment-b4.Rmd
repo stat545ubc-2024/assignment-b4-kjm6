@@ -131,7 +131,7 @@ plot_data <- final_tbl %>%
 ggplot(plot_data, aes(x = genus_name, y = avg_r_squared)) +
   geom_bar(stat = "identity") +
   theme_minimal() +
-  labs(title = "Most Common Trees in the City of Vancouver", subtitle = "Correlation between tree diameter and longitude", x = "Tree Genus", y = "R-squared Correlation") +
+  labs(title = "Correlation between tree diameter and longitude", x = "Tree Genus", y = "R-squared Correlation") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6))
 
 
