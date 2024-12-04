@@ -13,6 +13,8 @@ library(tidytext)
 library(tidyverse)
 library(wordcloud)
 library(datateachr)
+library(roxygen2)
+library(duck_latin)
 ```
 
 ## Exercise 1
@@ -46,51 +48,30 @@ wordcloud(names(word_freq), freq = word_freq, min.freq = 50, scale = c(3, 1)) # 
 
 ### Task: Make a function that converts words into your own version of pig latin
 
-Step 1: Write the code to translate words to pig latin
+Step 1: Write the code to translate words to "duck latin"
+
+See duck_latin.R file for function code and roxygen2 documentation
+
+Step 2: Example of using the function
 
 ```{r}
-kjm_pig_latin <- function(.) {
-  consonants <- c("b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z")
-  
-  # Function to check if a character is a consonant
-  is_consonant <- function(char) {
-    return(str_to_lower(char) %in% consonants)
-  }
-  
-  # Check for the presence and length of a consonant cluster at the front
-  starts_with_consonant_cluster <- function(.) {
-    cluster_end <- 1
-    while (cluster_end <= str_length(.) && is_consonant(str_sub(., cluster_end, cluster_end))) {
-      cluster_end <- cluster_end + 1
-    }
-    return(cluster_end - 1)
-  }
-  
-  # If the word starts with a consonant cluster, move the consonant cluster to the end and append "ak"
-  consonant_cluster_len <- starts_with_consonant_cluster(.)
-  if (consonant_cluster_len > 0) {
-    consonant_cluster <- str_sub(., 1, consonant_cluster_len)
-    remaining_word <- str_sub(., consonant_cluster_len + 1, str_length(.))
-    return(str_c(remaining_word, consonant_cluster, "ak"))
-  } else {
-    # If the word starts with a vowel cluster, leave the word structure and append "ak" to the end
-    return(str_c(., "ak"))
-  }
-}
-
+dictionary <- c("alpha", "bravo", "charlie", "delta", "echo") # Set the list of words to translate
+print(map_chr(dictionary, duck_latin))
 ```
 
-Step 2: Test the code on a set of words
+Step 3: Perform 3 non-redundant tests
 
 ```{r}
-# Set the dictionary of words to translate
-dictionary <- c("alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india", "juliett", "kilo", "lima", "mike", "november", "oscar", "papa", "quebec", "romeo", "sierra", "tango", "uniform", "victor", "whiskey", "xray", "yankee", "yulu")
+# Test one: print direct return output
+print(c("Test 1:", duck_latin("sleep")))
 
-# Test the pig latin on the dictionary of words above
-print(purrr::map_chr(dictionary, kjm_pig_latin))
+#Test two: print list return output of each letter combination type
+list <- c("oolong", "flame", "apple", "party") # vowel-vowel, consonant-consonant, vowel-consonant, and consonant-vowel
+print(c("Test 2:", map_chr(list, duck_latin)))
 
+#Test three: input numbers to check for error
+print(c("Test 3:", duck_latin(1)))
 ```
-
 
 ## Exercise 3 
 

@@ -34,10 +34,23 @@ wordcloud(names(word_freq), freq = word_freq, min.freq = 50, scale = c(3, 1)) # 
 
 ### Task: Make a function that converts words into your own version of pig latin
 
-Step 1: Write the code to translate words to pig latin
+Step 1: Write the code to translate words to “duck latin”
 
 ``` r
-kjm_pig_latin <- function(.) {
+#' Duck Latin Function
+#'
+#' Converts a word or list of words from english to duck latin
+#'
+#' @param .x The word or list of words to be converted
+#'
+#' @return The converted word or list of words
+#'
+#' @examples
+#' word_list <- c("red", "orange", "yellow")
+#' duck_latin(word_list)
+
+
+duck_latin <- function(.x) {
   consonants <- c("b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z")
   
   # Function to check if a character is a consonant
@@ -45,44 +58,64 @@ kjm_pig_latin <- function(.) {
     return(str_to_lower(char) %in% consonants)
   }
   
-  # Check for the presence and length of a consonant cluster at the front
-  starts_with_consonant_cluster <- function(.) {
+  # Function to check for the presence and length of a consonant cluster at the front
+  starts_with_consonant_cluster <- function(.x) {
     cluster_end <- 1
-    while (cluster_end <= str_length(.) && is_consonant(str_sub(., cluster_end, cluster_end))) {
+    while (cluster_end <= str_length(.x) && is_consonant(str_sub(.x, cluster_end, cluster_end))) {
       cluster_end <- cluster_end + 1
     }
     return(cluster_end - 1)
   }
   
   # If the word starts with a consonant cluster, move the consonant cluster to the end and append "ak"
-  consonant_cluster_len <- starts_with_consonant_cluster(.)
+  consonant_cluster_len <- starts_with_consonant_cluster(.x)
+  if (is.numeric(.x)){
+    return("The input is numeric and cannot be translated to duck latin")
+  }
   if (consonant_cluster_len > 0) {
-    consonant_cluster <- str_sub(., 1, consonant_cluster_len)
-    remaining_word <- str_sub(., consonant_cluster_len + 1, str_length(.))
+    consonant_cluster <- str_sub(.x, 1, consonant_cluster_len)
+    remaining_word <- str_sub(.x, consonant_cluster_len + 1, str_length(.x))
     return(str_c(remaining_word, consonant_cluster, "ak"))
   } else {
     # If the word starts with a vowel cluster, leave the word structure and append "ak" to the end
-    return(str_c(., "ak"))
+    return(str_c(.x, "ak"))
   }
 }
 ```
 
-Step 2: Test the code on a set of words
+Step 2: Example of using the function
 
 ``` r
-# Set the dictionary of words to translate
-dictionary <- c("alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india", "juliett", "kilo", "lima", "mike", "november", "oscar", "papa", "quebec", "romeo", "sierra", "tango", "uniform", "victor", "whiskey", "xray", "yankee", "yulu")
-
-# Test the pig latin on the dictionary of words above
-print(purrr::map_chr(dictionary, kjm_pig_latin))
+dictionary <- c("alpha", "bravo", "charlie", "delta", "echo") # Set the list of words to translate
+print(map_chr(dictionary, duck_latin))
 ```
 
-    ##  [1] "alphaak"    "avobrak"    "arliechak"  "eltadak"    "echoak"    
-    ##  [6] "oxtrotfak"  "olfgak"     "otelhak"    "indiaak"    "uliettjak" 
-    ## [11] "ilokak"     "imalak"     "ikemak"     "ovembernak" "oscarak"   
-    ## [16] "apapak"     "uebecqak"   "omeorak"    "ierrasak"   "angotak"   
-    ## [21] "uniformak"  "ictorvak"   "iskeywhak"  "ayxrak"     "ankeeyak"  
-    ## [26] "uluyak"
+    ## [1] "alphaak"   "avobrak"   "arliechak" "eltadak"   "echoak"
+
+Step 3: Perform 3 non-redundant tests
+
+``` r
+# Test one: print direct return output
+print(c("Test 1:", duck_latin("sleep")))
+```
+
+    ## [1] "Test 1:" "eepslak"
+
+``` r
+#Test two: print list return output of each letter combination type
+list <- c("oolong", "flame", "apple", "party") # vowel-vowel, consonant-consonant, vowel-consonant, and consonant-vowel
+print(c("Test 2:", map_chr(list, duck_latin)))
+```
+
+    ## [1] "Test 2:"  "oolongak" "ameflak"  "appleak"  "artypak"
+
+``` r
+#Test three: input numbers to check for error
+print(c("Test 3:", duck_latin(1)))
+```
+
+    ## [1] "Test 3:"                                                    
+    ## [2] "The input is numeric and cannot be translated to duck latin"
 
 ## Exercise 3
 
@@ -170,7 +203,7 @@ ggplot(plot_data, aes(x = genus_name, y = avg_r_squared)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6))
 ```
 
-![](assignment-b4_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](assignment-b4_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 Explaining this analysis:
 
 In this analysis, we show that certain genus of trees are more likely to

@@ -1,0 +1,10 @@
+Package: duck_latin
+Type: Package
+Title: duck_latin
+Version: 0.1.0
+Author: Katie Moloney
+Maintainer: kjm6@student.ubc.ca
+Description: Converts english to duck latin.
+License: MIT
+RoxygenNote: 7.3.2
+Encoding: UTF-8
