@@ -100,12 +100,13 @@ Step 1: Make a column of model objects
 
 ```{r}
 common_trees <- vancouver_trees %>%
-  select(tree_id, genus_name, diameter, height_range_id) %>% #selecting columns that will be used
+  select(tree_id, genus_name, diameter, height_range_id, longitude) %>% #selecting columns that will be used
+  filter(!is.na(longitude)) %>% 
   group_by(genus_name) %>% #grouping by genus for count
   mutate(genus_count = n()) %>% #counting the number of trees in each genus
   filter(genus_count >= 50) %>%  #removing any trees with a genus count less than 50
   nest() %>%  #nesting initial data
-  mutate(model = map(data, ~ lm(diameter ~ height_range_id, data = .))) #mapping linear regression model of diameter and height
+  mutate(model = map(data, ~ lm(diameter ~ longitude, data = .))) #mapping linear regression model of diameter and longitude
 ```
 
 Step 2: Evaluate the models for R-squared, coefficient, residual, and fitted values and print the intermediate tibble
@@ -147,8 +148,15 @@ plot_data <- final_tbl %>%
 ggplot(plot_data, aes(x = genus_name, y = avg_r_squared)) +
   geom_bar(stat = "identity") +
   theme_minimal() +
-  labs(title = "Most Common Trees in the City of Vancouver", subtitle = "Correlation between tree height and diameter", x = "Tree Genus", y = "R-squared Correlation") +
+  labs(title = "Most Common Trees in the City of Vancouver", subtitle = "Correlation between tree diameter and longitude", x = "Tree Genus", y = "R-squared Correlation") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6))
 
 
 ```
+Explaining this analysis:
+
+In this analysis, we show that certain genus of trees are more likely to show a correlation between their diameter and longitude than others. To do so, we take our initial dataset of all of the trees in Vancouver. We then filter and select tree genus groups with at least 50 trees. This is important, because for groups of less than 50, the statistics calculation we do next may be skewed by the small group size.
+
+Next, we run a linear regression model to determine the correlation between tree diameter and longitude. At this point, the individual tree data is nested, so r-squared values are for the whole genus while coefficients, residuals, and fitted values are stored as lists under each genus. To clairfy this, we unnest the data and print a glimpse of the table which shows the stats calculations for each individual tree in our dataset. 
+
+Finally, we produce a barchart plot which shows the r-squared value for each tree genus. We can see the tree genus platanus has the closest correlation between diameter and longitude. With an R-squared value of approximately 0.23, this is not a very strong correlation, but it does exhibit a weak link between tree size and east-west location within the city.
