@@ -1,4 +1,4 @@
-This repository contains the Rmd and md files for the STAT545 B-4 Assignment. 
+This repository contains all necessary files for the STAT545 B-4 Assignment. 
 
 The assignment is contained in the files `assignment-b4.Rmd` and `assignment-b4.md`. In the assignment, there are three exercises. 
 
