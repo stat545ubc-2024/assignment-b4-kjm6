@@ -28,6 +28,9 @@ word_freq <- table(prideprejudicewords) %>% # counting occurence of each word
 wordcloud(names(word_freq), freq = word_freq, min.freq = 50, scale = c(3, 1)) # plotting wordcloud based on frequency
 ```
 
+    ## Warning in wordcloud(names(word_freq), freq = word_freq, min.freq = 50, :
+    ## elizabeth could not be fit on page. It will not be plotted.
+
 ![](assignment-b4_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
 ## Exercise 2
@@ -162,6 +165,7 @@ ggplot(plot_data, aes(x = genus_name, y = avg_r_squared)) +
 ```
 
 ![](assignment-b4_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
 Explaining this analysis:
 
 In this analysis, we show that certain genus of trees are more likely to
