@@ -1,6 +1,10 @@
 #' Duck Latin Function
 #'
-#' Converts a word or list of words from english to duck latin
+#' Converts a word or list of words from english to a created langauge called duck latin. 
+#' Duck latin translates from english by first moving the consonant cluster at the beginning of 
+#' the word to the end. If the word begins with a vowel sound, no change is made. After, the sound 
+#' "ak" is appended to the end of the word.
+#' 
 #'
 #' @param .x The word or list of words to be converted
 #'
